@@ -1,0 +1,29 @@
+device : cpu
+dataset :
+  name : LJ
+  input_dir : "structures/lj.xyz"
+  nparticles : 32
+  kT : 2
+  rho : 1.28
+
+
+flow:
+  type: NSF_AR
+  nlayers: 3
+
+prior:
+  type : "lattice"
+  lattice_dir : "structures/ref.xyz"
+  alpha : 1000
+
+train_parameters :
+  max_epochs : 4000
+  batch_size : 100
+  output_freq : 100
+  learning_rate : 1e-4
+  lr_scheduler_gamma : 0.999
+
+output:
+  pos_dir: ./positions_during_training.xyz
+  model_dir: saved_models/
+
