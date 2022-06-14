@@ -19,13 +19,37 @@ def load_position(dir):
     pos = torch.from_numpy(np.array([np.array(traj[i]) for i in range(len(traj))])).flatten(start_dim=1)
     return pos
 
-def write_coord(file_dir,traj,nparticles,boxlength):
+def read_coord(dir,format="torch"):
+    with open(dir, 'rb') as coord:
+        n_atoms=int(coord.readline())
+        counter=0
+        coord.seek(0)
+        pos=[]
+        while True:
+            line = coord.readline()
+            if not line:
+                break
+            if (counter%(n_atoms+2)==0):
+                pos.append(np.zeros((n_atoms,3))) 
+            if (counter%(n_atoms+2)>1): 
+                pos[-1][counter%(n_atoms+2)-2]=line.split()[1:4]
+            counter+=1
+        if format=="torch":
+            pos=torch.from_numpy(np.array(pos))
+        else:
+            pos=np.array(pos)
+    return pos
+    
+
+
+def write_coord(file_dir,traj,nparticles,boxlength=None):
     traj=traj.reshape((-1,nparticles,3))
     with open(file_dir, 'a') as pos:
         for j in range(len(traj)):
-                U=LJ_potential(traj[j],boxlength,cutoff=2.7)
+                #U=LJ_potential(traj[j],boxlength,cutoff=2.7)
                 pos.write('%d\n'%nparticles)
-                pos.write('U: %d\n' % U)
+                pos.write(' Atoms\n')
+                #pos.write('U: %d\n' % U)
                 atom_index=np.ones(nparticles)
                 config = np.column_stack((atom_index, traj[j].reshape((-1, 3)).cpu()))
                 np.savetxt(pos, config, fmt=['%u', '%.5f', '%.5f', '%.5f'])

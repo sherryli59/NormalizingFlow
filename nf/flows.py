@@ -268,15 +268,16 @@ class NSF_AR(nn.Module):
 
     [Durkan et al. 2019]
     """
-    def __init__(self, dim, K = 32, B = 3, hidden_dim = 800, base_network = FCNN):
+    def __init__(self, dim, K = 32, B = 3, hidden_dim = 800, base_network = FCNN, device="cpu"):
         super().__init__()
         self.dim = dim
         self.K = K
         self.B = B
+        self.device = device
         self.layers = nn.ModuleList()
-        self.init_param = nn.Parameter(torch.Tensor(3 * K - 1))
+        self.init_param = nn.Parameter(torch.Tensor(3 * K - 1)).to(self.device)
         for i in range(1, dim):
-            self.layers += [base_network(i, 3 * K - 1, hidden_dim)]
+            self.layers += [base_network(i, 3 * K - 1, hidden_dim).to(self.device)]
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -284,7 +285,7 @@ class NSF_AR(nn.Module):
 
     def forward(self, x):
         z = torch.zeros_like(x)
-        log_det = torch.zeros(z.shape[0])
+        log_det = torch.zeros(z.shape[0]).to(self.device)
         for i in range(self.dim):
             if i == 0:
                 init_param = self.init_param.expand(x.shape[0], 3 * self.K - 1)
@@ -302,7 +303,7 @@ class NSF_AR(nn.Module):
 
     def inverse(self, z):
         x = torch.zeros_like(z)
-        log_det = torch.zeros(x.shape[0])
+        log_det = torch.zeros(x.shape[0]).to(self.device)
         for i in range(self.dim):
             if i == 0:
                 init_param = self.init_param.expand(x.shape[0], 3 * self.K - 1)
@@ -323,21 +324,25 @@ class NSF_CL(nn.Module):
     """
     Neural spline flow, coupling layer.
 
-    [Durkan et al. 2019]
+    [Wirnsberger et al. 2020]
     """
-    def __init__(self, dim, K = 32, B = 3, hidden_dim = 800, base_network = FCNN):
+    def __init__(self, size, dim=3, K = 32, B = 3, hidden_dim = 800, base_network = FCNN, device="cpu",mask=[1]):
         super().__init__()
+        self.size = size
         self.dim = dim
         self.K = K
         self.B = B
-        self.device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.f1 = base_network(dim // 2, (3 * K - 1) * dim // 2, hidden_dim).to(self.device)
-        self.f2 = base_network(dim // 2, (3 * K - 1) * dim // 2, hidden_dim).to(self.device)
+        self.device = device
+        self.mask = mask
+        print(len(mask))
+        self.unmasked = [x for x in range(self.dim) if x not in self.mask]
+        self.psi = base_network(len(mask)*self.size, (3 * K - 1) * (self.dim-len(self.mask)*self.size), hidden_dim).to(self.device)
 
     def forward(self, x):
         log_det = torch.zeros(x.shape[0]).to(self.device)
-        lower, upper = x[:, :self.dim // 2], x[:, self.dim // 2:]
-        out = self.f1(lower).reshape(-1, self.dim // 2, 3 * self.K - 1)
+        x=x.reshape(-1,self.size, self.dim)
+        lower, upper = x[:, :, self.mask].flatten(start_dim=1), x[:, :, self.unmasked].flatten(start_dim=1)
+        out = self.psi(lower).reshape(-1, (self.dim-len(self.mask)*self.size), 3 * self.K - 1)
         W, H, D = torch.split(out, self.K, dim = 2)
         W, H = torch.softmax(W, dim = 2), torch.softmax(H, dim = 2)
         W, H = 2 * self.B * W, 2 * self.B * H
@@ -345,35 +350,17 @@ class NSF_CL(nn.Module):
         upper, ld = unconstrained_RQS(
             upper, W, H, D, inverse=False, tail_bound=self.B)
         log_det += torch.sum(ld, dim = 1)
-        out = self.f2(upper).reshape(-1, self.dim // 2, 3 * self.K - 1)
-        W, H, D = torch.split(out, self.K, dim = 2)
-        W, H = torch.softmax(W, dim = 2), torch.softmax(H, dim = 2)
-        W, H = 2 * self.B * W, 2 * self.B * H
-        D = F.softplus(D)
-        lower, ld = unconstrained_RQS(
-            lower, W, H, D, inverse=False, tail_bound=self.B)
-        log_det += torch.sum(ld, dim = 1)
         return torch.cat([lower, upper], dim = 1), log_det
 
     def inverse(self, z):
         log_det = torch.zeros(z.shape[0]).to(self.device)
-        lower, upper = z[:, :self.dim // 2], z[:, self.dim // 2:]
-        out = self.f2(upper).reshape(-1, self.dim // 2, 3 * self.K - 1)
-        W, H, D = torch.split(out, self.K, dim = 2)
-        W, H = torch.softmax(W, dim = 2), torch.softmax(H, dim = 2)
-        W, H = 2 * self.B * W, 2 * self.B * H
-        D = F.softplus(D)
-        lower, ld = unconstrained_RQS(
-            lower, W, H, D, inverse=True, tail_bound=self.B)
-
-        log_det += torch.sum(ld, dim = 1)
-        out = self.f1(lower).reshape(-1, self.dim // 2, 3 * self.K - 1)
+        lower, upper = z[:, :, self.mask].flatten(start_dim=1), z[:, :, self.unmasked].flatten(start_dim=1)
+        out = self.psi(lower).reshape(-1, (self.dim-len(self.mask)*self.size), 3 * self.K - 1)
         W, H, D = torch.split(out, self.K, dim = 2)
         W, H = torch.softmax(W, dim = 2), torch.softmax(H, dim = 2)
         W, H = 2 * self.B * W, 2 * self.B * H
         D = F.softplus(D)
         upper, ld = unconstrained_RQS(
-            upper, W, H, D, inverse = True, tail_bound=self.B)
-
+            upper, W, H, D, inverse=True, tail_bound=self.B)
         log_det += torch.sum(ld, dim = 1)
         return torch.cat([lower, upper], dim = 1), log_det

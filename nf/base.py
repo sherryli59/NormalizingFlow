@@ -3,9 +3,9 @@ from torch.distributions import MultivariateNormal
 from nf.utils import load_position
 
 class EinsteinCrystal:
-    def __init__(self, file_dir, dim=3, boxlength=None, alpha=50):
+    def __init__(self, file_dir, dim=3, boxlength=None, alpha=50, device="cpu"):
         super().__init__()
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = device
         self.lattice = load_position(file_dir).reshape(-1,dim).to(self.device)
         self.natoms = list(self.lattice.size())[0]
         #self.variance = (0.5*torch.kthvalue(torch.linalg.norm(self.lattice-self.lattice[0],dim=1),2)[0])**2

@@ -5,16 +5,21 @@ cfg = CN()
 cfg.device="cuda:0"
 
 cfg.dataset = CN()
-cfg.dataset.name = "LJ"
+cfg.dataset.name = "Fe"
 cfg.dataset.input_dir = "structures/lj.xyz"
 cfg.dataset.nparticles = 32
-cfg.dataset.kT = 2
-cfg.dataset.rho = 1.28
-
+cfg.dataset.kT = float(1)
+cfg.dataset.rho = None
+cfg.dataset.ncellx = None
+cfg.dataset.ncelly = None
+cfg.dataset.ncellz = None
+cfg.dataset.cell_len = None
 
 cfg.flow=CN()
 cfg.flow.type= "NSF_CL"
 cfg.flow.nlayers=3
+cfg.flow.nsplines =32
+cfg.flow.hidden_dim = 100
 
 cfg.prior=CN()
 cfg.prior.type = "lattice"
