@@ -4,9 +4,9 @@ import torch.nn as nn
 
 class NormalizingFlowModel(nn.Module):
 
-    def __init__(self, prior, flows):
+    def __init__(self, prior, flows, device="cpu"):
         super().__init__()
-        self.device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device=device
         self.prior = prior
         self.flows = nn.ModuleList(flows)
 

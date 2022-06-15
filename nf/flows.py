@@ -333,16 +333,15 @@ class NSF_CL(nn.Module):
         self.K = K
         self.B = B
         self.device = device
-        self.mask = mask
-        print(len(mask))
-        self.unmasked = [x for x in range(self.dim) if x not in self.mask]
-        self.psi = base_network(len(mask)*self.size, (3 * K - 1) * (self.dim-len(self.mask)*self.size), hidden_dim).to(self.device)
+        self.mask = torch.Tensor(mask).long()
+        self.unmasked = torch.Tensor([x for x in range(self.dim) if x not in self.mask]).long()
+        self.psi = base_network(len(mask)*self.size, (3 * K - 1) * (self.dim-len(self.mask))*self.size, hidden_dim).to(self.device)
 
     def forward(self, x):
         log_det = torch.zeros(x.shape[0]).to(self.device)
         x=x.reshape(-1,self.size, self.dim)
         lower, upper = x[:, :, self.mask].flatten(start_dim=1), x[:, :, self.unmasked].flatten(start_dim=1)
-        out = self.psi(lower).reshape(-1, (self.dim-len(self.mask)*self.size), 3 * self.K - 1)
+        out = self.psi(lower).reshape(-1, (self.dim-len(self.mask))*self.size, 3 * self.K - 1)
         W, H, D = torch.split(out, self.K, dim = 2)
         W, H = torch.softmax(W, dim = 2), torch.softmax(H, dim = 2)
         W, H = 2 * self.B * W, 2 * self.B * H
@@ -350,12 +349,13 @@ class NSF_CL(nn.Module):
         upper, ld = unconstrained_RQS(
             upper, W, H, D, inverse=False, tail_bound=self.B)
         log_det += torch.sum(ld, dim = 1)
-        return torch.cat([lower, upper], dim = 1), log_det
+        return torch.cat([lower.reshape(-1,self.size,len(self.mask)), upper.reshape(-1,self.size,self.dim-len(self.mask))], dim = 2).flatten(start_dim=1), log_det
 
     def inverse(self, z):
         log_det = torch.zeros(z.shape[0]).to(self.device)
+        z=z.reshape(-1,self.size, self.dim)
         lower, upper = z[:, :, self.mask].flatten(start_dim=1), z[:, :, self.unmasked].flatten(start_dim=1)
-        out = self.psi(lower).reshape(-1, (self.dim-len(self.mask)*self.size), 3 * self.K - 1)
+        out = self.psi(lower).reshape(-1, (self.dim-len(self.mask))*self.size, 3 * self.K - 1)
         W, H, D = torch.split(out, self.K, dim = 2)
         W, H = torch.softmax(W, dim = 2), torch.softmax(H, dim = 2)
         W, H = 2 * self.B * W, 2 * self.B * H
@@ -363,4 +363,4 @@ class NSF_CL(nn.Module):
         upper, ld = unconstrained_RQS(
             upper, W, H, D, inverse=True, tail_bound=self.B)
         log_det += torch.sum(ld, dim = 1)
-        return torch.cat([lower, upper], dim = 1), log_det
+        return torch.cat([lower.reshape(-1,self.size,len(self.mask)), upper.reshape(-1,self.size,self.dim-len(self.mask))], dim = 2).flatten(start_dim=1), log_det
