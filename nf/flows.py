@@ -277,11 +277,14 @@ class NSF_AR(nn.Module):
         self.layers = nn.ModuleList()
         self.init_param = nn.Parameter(torch.Tensor(3 * K - 1)).to(self.device)
         for i in range(1, dim):
-            self.layers += [base_network(i, 3 * K - 1, hidden_dim).to(self.device)]
+            self.layers += [base_network(2*i, 3 * K - 1, hidden_dim).to(self.device)]
         self.reset_parameters()
 
     def reset_parameters(self):
         init.uniform_(self.init_param, - 1 / 2, 1 / 2)
+
+    def trig_transform(self,x):
+        return torch.cat((torch.cos(torch.tensor(np.pi)*x/self.B),torch.sin(torch.tensor(np.pi)*x/self.B)),axis=-1)
 
     def forward(self, x):
         z = torch.zeros_like(x)
@@ -291,7 +294,8 @@ class NSF_AR(nn.Module):
                 init_param = self.init_param.expand(x.shape[0], 3 * self.K - 1)
                 W, H, D = torch.split(init_param, self.K, dim = 1)
             else:
-                out = self.layers[i - 1](x[:, :i])
+
+                out = self.layers[i - 1](self.trig_transform(x[:, :i]))
                 W, H, D = torch.split(out, self.K, dim = 1)
             W, H = torch.softmax(W, dim = 1), torch.softmax(H, dim = 1)
             W, H = 2 * self.B * W, 2 * self.B * H
@@ -309,7 +313,7 @@ class NSF_AR(nn.Module):
                 init_param = self.init_param.expand(x.shape[0], 3 * self.K - 1)
                 W, H, D = torch.split(init_param, self.K, dim = 1)
             else:
-                out = self.layers[i - 1](x[:, :i])
+                out = self.layers[i - 1](self.trig_transform(x[:, :i]))
                 W, H, D = torch.split(out, self.K, dim = 1)
             W, H = torch.softmax(W, dim = 1), torch.softmax(H, dim = 1)
             W, H = 2 * self.B * W, 2 * self.B * H
