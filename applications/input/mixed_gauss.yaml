@@ -1,0 +1,32 @@
+device : cpu
+dataset :
+  name : mGauss
+  nparticles : 10
+  ncellx : 2
+  ncelly : 2
+  ncellz : 2
+  cell_len : 1
+
+
+
+
+flow:
+  type: NSF_AR
+  nlayers: 4
+  nsplines : 20
+  hidden_dim : 120
+
+prior:
+  type : normal
+
+train_parameters :
+  max_epochs : 8000
+  batch_size : 10
+  output_freq : 100
+  learning_rate : 5e-4
+  lr_scheduler_gamma : 0.999
+
+output:
+  pos_dir: ./gauss_positions_during_training.xyz
+  model_dir: saved_models/
+
