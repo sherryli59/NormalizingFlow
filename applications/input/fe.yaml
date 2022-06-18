@@ -1,0 +1,33 @@
+device : cuda:0
+dataset :
+  name : Fe
+  input_dir : md_data/fe_400K.xyz
+  nparticles : 54
+  kT : 0.034469333048
+  ncellx : 3
+  ncelly : 3 
+  ncellz : 3 
+  cell_len : 2.9115
+
+flow:
+  type: NSF_CL
+  nlayers: 10
+  nsplines: 32
+  hidden_dim: 324
+
+prior:
+  type : "lattice"
+  lattice_dir : md_data/fe_ref.xyz
+  alpha : 300
+
+train_parameters :
+  max_epochs : 8000
+  batch_size : 40
+  output_freq : 100
+  learning_rate : 1e-4
+  lr_scheduler_gamma : 0.999
+
+output:
+  pos_dir: ./fe_positions_during_training.xyz
+  model_dir: saved_models/
+
