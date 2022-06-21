@@ -1,7 +1,8 @@
 device : cuda:0
 dataset :
   name : Fe
-  input_dir : md_data/fe_400K.xyz
+  training_dir : md_data/fe_400K.xyz
+  testing_dir: md_data/fe_400K_test.xyz
   nparticles : 54
   kT : 0.034469333048
   ncellx : 3
@@ -28,6 +29,6 @@ train_parameters :
   lr_scheduler_gamma : 0.999
 
 output:
-  pos_dir: ./fe_positions_during_training.xyz
+  pos_dir: testing/fe/generated_configs.xyz
   model_dir: saved_models/
 

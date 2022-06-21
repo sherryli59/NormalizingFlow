@@ -40,7 +40,14 @@ def read_coord(dir,format="torch"):
             pos=np.array(pos)
     return pos
     
-
+def write_lammps_coord(file_dir,traj,nparticles,boxlength=None):
+    traj=traj.reshape((-1,nparticles,3))
+    with open(file_dir, 'a') as pos:
+        for j in range(len(traj)):
+                atom_index=np.arange(nparticles)
+                type_index=np.ones(nparticles)
+                config = np.column_stack((atom_index, type_index, traj[j].reshape((-1, 3)).cpu()))
+                np.savetxt(pos, config, fmt=['%u','%u', '%.5f', '%.5f', '%.5f'])
 
 def write_coord(file_dir,traj,nparticles,boxlength=None):
     traj=traj.reshape((-1,nparticles,3))
@@ -114,8 +121,8 @@ def unconstrained_RQS(inputs, unnormalized_widths, unnormalized_heights,
 
     outputs[outside_interval_mask] = inputs[outside_interval_mask]
     logabsdet[outside_interval_mask] = 0
-    if any(inside_intvl_mask):
-        outputs[inside_intvl_mask], logabsdet[inside_intvl_mask] = RQS(
+    #if any(inside_intvl_mask):
+    outputs[inside_intvl_mask], logabsdet[inside_intvl_mask] = RQS(
             inputs=inputs[inside_intvl_mask],
             unnormalized_widths=unnormalized_widths[inside_intvl_mask, :],
             unnormalized_heights=unnormalized_heights[inside_intvl_mask, :],

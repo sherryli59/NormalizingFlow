@@ -287,7 +287,7 @@ class NSF_AR(nn.Module):
         return torch.cat((torch.cos(torch.tensor(np.pi)*x/self.B),torch.sin(torch.tensor(np.pi)*x/self.B)),axis=-1)
 
     def forward(self, x):
-        z = torch.zeros_like(x)
+        z = torch.zeros_like(x).to(self.device)
         log_det = torch.zeros(z.shape[0]).to(self.device)
         for i in range(self.dim):
             if i == 0:
@@ -306,7 +306,7 @@ class NSF_AR(nn.Module):
         return z, log_det
 
     def inverse(self, z):
-        x = torch.zeros_like(z)
+        x = torch.zeros_like(z).to(self.device)
         log_det = torch.zeros(x.shape[0]).to(self.device)
         for i in range(self.dim):
             if i == 0:

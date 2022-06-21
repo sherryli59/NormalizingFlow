@@ -6,7 +6,8 @@ cfg.device="cuda:0"
 
 cfg.dataset = CN()
 cfg.dataset.name = "Fe"
-cfg.dataset.input_dir = "structures/lj.xyz"
+cfg.dataset.training_dir = "structures/lj.xyz"
+cfg.dataset.testing_dir = "structures/lj_test.xyz"
 cfg.dataset.nparticles = 32
 cfg.dataset.kT = float(1)
 cfg.dataset.rho = None

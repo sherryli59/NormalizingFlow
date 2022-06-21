@@ -1,7 +1,7 @@
-device : cpu
+device : cuda:0
 dataset :
   name : mGauss
-  nparticles : 10
+  nparticles : 40
   ncellx : 2
   ncelly : 2
   ncellz : 2
@@ -11,17 +11,17 @@ dataset :
 
 
 flow:
-  type: NSF_AR
-  nlayers: 4
+  type: NSF_CL
+  nlayers: 10
   nsplines : 20
-  hidden_dim : 120
+  hidden_dim : 300
 
 prior:
   type : normal
 
 train_parameters :
   max_epochs : 8000
-  batch_size : 10
+  batch_size : 40
   output_freq : 100
   learning_rate : 5e-4
   lr_scheduler_gamma : 0.999

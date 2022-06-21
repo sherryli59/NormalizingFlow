@@ -1,7 +1,8 @@
 device : cpu
 dataset :
   name : LJ
-  input_dir : "structures/lj.xyz"
+  training_dir : structures/lj.xyz
+  testing_dir : structures/lj_test.xyz
   nparticles : 32
   kT : 2
   rho : 1.28
