@@ -1,16 +1,18 @@
-device : cpu
+device : cuda:0
 dataset :
   name : LJ
   training_dir : structures/lj.xyz
   testing_dir : structures/lj_test.xyz
   nparticles : 32
-  kT : 2
+  kT : 2.0
   rho : 1.28
 
 
 flow:
-  type: NSF_AR
-  nlayers: 3
+  type: NSF_CL
+  nlayers: 50
+  nsplines: 32
+  hidden_dim: 354
 
 prior:
   type : "lattice"
@@ -19,7 +21,7 @@ prior:
 
 train_parameters :
   max_epochs : 4000
-  batch_size : 100
+  batch_size : 40
   output_freq : 100
   learning_rate : 1e-4
   lr_scheduler_gamma : 0.999

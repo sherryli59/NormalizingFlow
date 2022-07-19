@@ -1,6 +1,6 @@
 device : cuda:0
 dataset :
-  name : Fe
+  name : Fe_400K
   training_dir : md_data/fe_400K.xyz
   testing_dir: md_data/fe_400K_test.xyz
   nparticles : 54
@@ -11,24 +11,26 @@ dataset :
   cell_len : 2.9115
 
 flow:
-  type: NSF_CL
-  nlayers: 10
+  type: NSF_AR
+  nlayers: 2
   nsplines: 32
-  hidden_dim: 324
+  hidden_dim: 354
 
 prior:
   type : "lattice"
-  lattice_dir : md_data/fe_ref.xyz
+  lattice_dir : md_data/fe_400K_ref.xyz
   alpha : 300
 
 train_parameters :
-  max_epochs : 8000
+  max_epochs : 15000
   batch_size : 40
   output_freq : 100
   learning_rate : 1e-4
+  scheduler: cosine
   lr_scheduler_gamma : 0.999
 
 output:
-  pos_dir: testing/fe/generated_configs.xyz
+  training_dir: training/fe/
+  testing_dir: testing/fe/
   model_dir: saved_models/
 
