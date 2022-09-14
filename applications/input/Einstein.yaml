@@ -1,0 +1,33 @@
+device : cuda:0
+dataset :
+  name : Einstein
+  potential : EinsteinCrystal
+  centers : structures/ref.xyz
+  alpha : 400 #alpha=1/variance
+  nparticles : 32
+  rho : 1.28
+
+
+flow:
+  type: NSF_AR
+  nlayers: 2
+  nsplines: 32
+  hidden_dim: 354
+
+prior:
+  type : EinsteinCrystal
+  centers : structures/ref.xyz
+  alpha : 600
+
+train_parameters :
+  max_epochs : 8000
+  batch_size : 40
+  output_freq : 100
+  learning_rate : 1e-4
+  scheduler: cosine
+
+output:
+  training_dir: training/einstein/
+  testing_dir: testing/einstein/
+  model_dir: saved_models/
+

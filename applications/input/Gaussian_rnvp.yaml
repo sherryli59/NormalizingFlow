@@ -1,0 +1,36 @@
+device : cpu
+dataset :
+  name : Gaussian_rnvp_2l
+  potential : GaussianMixture
+  centers : [[0.5,0.5]]
+  vars : [[0.36]]
+  nparticles : 20
+  boxlength : 0
+  dim : 2
+
+
+flow:
+  type: RealNVP
+  nlayers: 2
+  hidden_dim : 80
+
+prior:
+  type : GaussianMixture
+  centers : [[-0.5,-0.5]]
+  nparticles : 20
+  vars : [[0.25]]
+  dim : 2
+
+
+train_parameters :
+  max_epochs : 3000
+  batch_size : 60
+  output_freq : 100
+  learning_rate : 5e-3
+  lr_scheduler_gamma : 0.999
+
+
+output:
+  training_dir: training/gaussian_rnvp/
+  testing_dir: testing/gaussian_rnvp/
+  model_dir: saved_models/

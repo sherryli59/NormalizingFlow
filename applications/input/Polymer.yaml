@@ -1,0 +1,43 @@
+device : cpu
+dataset :
+  name : Polymer
+  potential : SimData
+  training_data : ../data/polymer/polymer_field.pt
+  testing_data: ../data/polymer/polymer_field_test.pt
+  type : pt
+  nparticles : 2048
+  dim : 1
+  ncellx : 1
+  ncelly : 1 
+  ncellz : 1 
+  cell_len : 1
+
+flow:
+  #type: NSF_AR
+  #nlayers: 2
+  #nsplines: 32
+  type: RealNVP
+  nlayers: 10
+  hidden_dim: 2000
+
+
+prior:
+  type : Normal
+  nparticles : 2048
+  dim : 1
+  vars : 0.1
+
+
+train_parameters :
+  max_epochs : 15000
+  batch_size : 40
+  output_freq : 100
+  learning_rate : 1e-4
+  scheduler: cosine
+  lr_scheduler_gamma : 0.999
+
+output:
+  training_dir: ../training_output/polymer/
+  testing_dir: ../testing_output/polymer/
+  model_dir: ../checkpoints/
+  best_model_dir: ../trained_models/

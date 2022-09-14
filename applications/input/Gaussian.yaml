@@ -1,0 +1,38 @@
+device : cpu
+dataset :
+  name : Gaussian
+  potential : GaussianMixture
+  centers : [[0.5,0.5]]
+  vars : [[0.36]]
+  nparticles : 20
+  dim : 2
+  ncellx : 8
+  ncelly : 8
+  ncellz : 8
+  cell_len : 1
+  periodic : True
+
+
+flow:
+  type: NSF_AR
+  nlayers: 1
+  nsplines : 10
+  hidden_dim : 80
+
+prior:
+  type : gaussian_mix
+  centers : [[-0.5,-0.5]]
+  vars : [[0.25]]
+
+train_parameters :
+  max_epochs : 3000
+  batch_size : 60
+  output_freq : 100
+  learning_rate : 5e-3
+  lr_scheduler_gamma : 0.999
+
+
+output:
+  training_dir: training/gaussian/
+  testing_dir: testing/gaussian/
+  model_dir: saved_models/

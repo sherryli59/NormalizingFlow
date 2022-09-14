@@ -1,0 +1,36 @@
+device : cpu
+dataset :
+  name : LJ
+  potential : LJ
+  input_dir: lj.lmp
+  training_dir : structures/lj.xyz
+  testing_dir : structures/lj_test.xyz
+  nparticles : 32
+  kT : 2.0
+  rho : 1.28
+
+
+flow:
+  type: NSF_AR
+  nlayers: 2
+  nsplines: 32
+  hidden_dim: 354
+
+prior:
+  type : EinsteinCrystal
+  centers: structures/ref.xyz
+  alpha : 1000
+
+train_parameters :
+  max_epochs : 8000
+  batch_size : 40
+  output_freq : 100
+  learning_rate : 1e-4
+  lr_scheduler_gamma : 0.999
+  scheduler: cosine
+
+output:
+  training_dir: training/lj/
+  testing_dir: testing/lj/
+  model_dir: saved_models/
+

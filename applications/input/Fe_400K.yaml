@@ -1,0 +1,38 @@
+device : cuda:0
+dataset :
+  name : Fe_400K
+  potential : Fe
+  input_dir: md_data/in.lmp
+  training_dir : md_data/fe_400K.xyz
+  testing_dir: fe_data_mc/fe_data_400K_test.xyz
+  nparticles : 54
+  kT : 0.034469333048
+  ncellx : 3
+  ncelly : 3 
+  ncellz : 3 
+  cell_len : 2.9115
+
+flow:
+  type: NSF_AR
+  nlayers: 2
+  nsplines: 32
+  hidden_dim: 354
+
+prior:
+  type : EinsteinCrystal
+  centers : fe_data_mc/fe_data_400K_ref.xyz
+  alpha : 300
+
+train_parameters :
+  max_epochs : 15000
+  batch_size : 40
+  output_freq : 100
+  learning_rate : 1e-4
+  scheduler: cosine
+  lr_scheduler_gamma : 0.999
+
+output:
+  training_dir: training/fe/
+  testing_dir: testing/fe/
+  model_dir: saved_models/
+
