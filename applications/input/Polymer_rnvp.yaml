@@ -1,6 +1,6 @@
 device : cuda:0
 dataset :
-  name : Polymer
+  name : Polymer_rnvp
   potential : SimData
   training_data : ../data/polymer/polymer_field.pt
   testing_data: ../data/polymer/polymer_field_test.pt
@@ -13,12 +13,9 @@ dataset :
   cell_len : 1
 
 flow:
-  type: NSF_AR
-  nlayers: 2
-  nsplines: 32
-  #type: RealNVP
-  #nlayers: 10
-  #hidden_dim: 2000
+  type: RealNVP
+  nlayers: 10
+  hidden_dim: 4000
 
 
 prior:

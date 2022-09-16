@@ -107,14 +107,15 @@ class LAMMPS():
 class SimData():
     def __init__(self, pos_dir=None, device="cpu",data_type="xyz"):
         self.device = device
+        self.data_type = data_type
         if pos_dir is not None:
             if data_type == "xyz":
                 traj = MDA.coordinates.XYZ.XYZReader(pos_dir)
                 self.traj = torch.tensor(np.array([np.array(traj[i]) for i in range(len(traj))]),requires_grad=True).to(device)
             elif data_type == "pt":
-                self.traj = torch.tensor(torch.load(pos_dir)).float()
+                self.traj = torch.tensor(torch.load(pos_dir)).float().to(device)
             elif data_type == "npy":
-                self.traj = torch.tensor(np.load(pos_dir)).float()
+                self.traj = torch.tensor(np.load(pos_dir)).float().to(device)
                 self.traj = self.traj.reshape(len(self.traj),-1)
     
     def sample(self,nsamples, flatten=True, random=True):
@@ -123,7 +124,23 @@ class SimData():
             return samples.reshape(nsamples,-1)
         else:
             return samples
-
+    def update_data(self,file,append=False):
+        traj = self.load_traj(file)
+        if append:
+            self.traj = torch.cat((self.traj,traj),axis=0)
+        else:
+            self.traj = traj
+    def load_traj(self,pos_dir):
+        if self.data_type == "xyz":
+            traj = MDA.coordinates.XYZ.XYZReader(pos_dir)
+            traj = torch.tensor(np.array([np.array(traj[i]) for i in range(len(traj))]),requires_grad=True).to(self.device)
+        elif self.data_type == "pt":
+            traj = torch.tensor(torch.load(pos_dir)).float()
+        elif self.data_type == "npy":
+            traj = torch.tensor(np.load(pos_dir)).float()
+            traj = traj.reshape(len(self.traj),-1)
+        return traj
+    
 class LJ(SimData):
     def __init__(self, pos_dir=None, boxlength=None, device="cpu", epsilon=1., sigma=1., cutoff=None, shift=True):
         super().__init__(pos_dir,device)

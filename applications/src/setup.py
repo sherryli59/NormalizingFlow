@@ -8,6 +8,7 @@ import sys
 sys.path.append("../../")
 from src.config import get_cfg_defaults
 from src import systems
+from src import utils
 from nf.flows import *
 from nf.models import NormalizingFlowModel
 
@@ -67,14 +68,10 @@ def setup_model(cfg, mode="training"):
     elif cfg.train_parameters.scheduler == "cosine":
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, cfg.train_parameters.max_epochs)
 
-    if not(os.path.exists(cfg.output.model_dir)):
-        os.mkdir(cfg.output.model_dir)
-    if not(os.path.exists(cfg.output.training_dir)):
-        os.mkdir(cfg.output.training_dir)
-    if not(os.path.exists(cfg.output.testing_dir)):
-        os.mkdir(cfg.output.testing_dir)
-    if not(os.path.exists(cfg.output.model_dir)):
-        os.mkdir(cfg.output.model_dir)
+    utils.mkdir(cfg.output.training_dir)
+    utils.mkdir(cfg.output.testing_dir)
+    utils.mkdir(cfg.output.model_dir)
+    utils.mkdir(cfg.output.best_model_dir)
 
     if mode=="training":
             cfg.dataset.data= cfg.dataset.training_data
@@ -103,7 +100,7 @@ def KL(model,potential,nsamples):
     return -torch.mean(logprob)+torch.mean(potential.log_prob(x))
 
 def load_model(name,cfg,model_dir):
-    nf = torch.load("%s/%s.pth"%(model_dir,name),map_location='cpu')
+    nf = torch.load("%s%s.pth"%(model_dir,name),map_location='cpu')
     np.savetxt(cfg.output.testing_dir+"loss_%s.dat"%cfg.dataset.name,torch.Tensor(nf["loss"]).cpu().numpy())
 
     model,optimizer,scheduler,logger,potential = setup_model(cfg,mode="testing")

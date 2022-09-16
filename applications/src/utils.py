@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import torch
 import MDAnalysis as MDA
 import numpy as np
+import os
 
 def plot_Q(cfg,Q,split=False,save=True):
     if split:
@@ -104,3 +105,7 @@ def subsample(data,nsamples,device="cpu",random=True):
         return data.index_select(0,indices)
     else:
         return data[:nsamples]
+
+def mkdir(dir):
+    if not(os.path.exists(dir)):
+        os.mkdir(dir)

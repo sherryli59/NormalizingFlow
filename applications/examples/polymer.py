@@ -2,12 +2,12 @@ import torch
 import sys
 sys.path.append("../../")   
 sys.path.append("../")
-from src import setup   
+from src import setup,train
 import numpy as np 
 
 def generate_from_nf(cfg, model, nsamples=50):
     x, log_px , _= model.sample(nsamples)
-    save_field(cfg,x.detach().numpy()) 
+    save_field(cfg,x.detach().cpu().numpy()) 
     return x, log_px
 
 def plot_field(x):
@@ -26,7 +26,7 @@ def save_field(cfg,x):
     np.save(cfg.output.testing_dir+"generated_fields.npy",x)
 
 def main(mode):
-    name="Polymer"
+    name="Polymer_rnvp"
     cfg=setup.read_input("../input/%s.yaml"%name)
     if mode == "training":
         model,optimizer,scheduler,logger,potential = setup.setup_model(cfg)

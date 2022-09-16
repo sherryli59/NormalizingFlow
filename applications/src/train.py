@@ -1,9 +1,8 @@
 import torch
-import setup
 import sys
 sys.path.append("../../")
-import utils
-import dynamics
+sys.path.append("../")
+from src import setup,utils,dynamics
 
 
 
@@ -37,7 +36,7 @@ def train(cfg,model,optimizer,scheduler,logger,potential,sim=None):
             
             if (i>0) and (-forward_loss>max_logprob):
                 max_logprob=-forward_loss
-                torch.save({"model":model.state_dict(),"optim": optimizer.state_dict(),
+                torch.save({"model":model.state_dict(),"optim": optimizer.state_dict(),"scheduler": scheduler.state_dict(),"epoch": i+1,
                             "loss":losses},cfg.output.model_dir+cfg.dataset.name+'%d.pth'% (i//cfg.train_parameters.output_freq))
 def main():
     name=sys.argv[1]
